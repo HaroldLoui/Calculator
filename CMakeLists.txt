@@ -6,20 +6,29 @@ project(${ProjectId} C)
 
 set(CMAKE_C_STANDARD 11)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-
-include_directories(${GTK3_INCLUDE_DIRS})
-link_directories(${GTK3_LIBRARY_DIRS})
-
-add_definitions(${GTK3_CFLAGS_OTHER})
-
 include_directories("include")
 
-file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
-foreach(file ${files})
-    get_filename_component(name ${file} NAME)
-    add_executable(${name} ${file})
+if (WIN32)
+    set(DEPS gtk+-3.0)
+elseif (APPLE)
+    set(DEPS gtk+-3.0 glib-2.0)
+else()
+    set(DEPS gtk+-3.0)
+endif ()
 
-    target_link_libraries(${name} ${GTK3_LIBRARIES})
-endforeach()
+# Use the package PkgConfig to detect GTK+ headers/library files
+FIND_PACKAGE(PkgConfig REQUIRED)
+
+foreach (dep ${DEPS})
+    PKG_CHECK_MODULES(${dep} REQUIRED ${dep})
+
+    INCLUDE_DIRECTORIES(${${dep}_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${${dep}_LIBRARY_DIRS})
+endforeach ()
+
+file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
+add_executable(calculator ${files})
+
+foreach (dep ${DEPS})
+    target_link_libraries(calculator ${${dep}_LIBRARIES})
+endforeach ()

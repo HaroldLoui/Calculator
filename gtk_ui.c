@@ -86,7 +86,7 @@ static void GtkMain(int argc, char *argv[]) {
 
     gtk_main();
 
-    gtk_style_context_remove_provider_for_screen(gtk_window_get_screen(window), css_provider);
+    gtk_style_context_remove_provider_for_screen(gtk_window_get_screen(window), (GtkStyleProvider *) css_provider);
     g_object_unref(css_provider);
     g_object_unref(builder);
 }
